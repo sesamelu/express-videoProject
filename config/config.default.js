@@ -1,0 +1,1 @@
+module.exports.mongopath = 'mongodb://127.0.0.1/node-video'
