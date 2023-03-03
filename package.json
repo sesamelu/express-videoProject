@@ -1,0 +1,23 @@
+{
+  "name": "video-beginner-node",
+  "version": "1.0.0",
+  "description": "express搭建服务，可用作node项目模板，包含用户登录/注册/JWT认证、视频上传/点赞/评论、Redis实现视频热门机制等功能，使用mongoose链接MongoDB数据库做数据持久化存储",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon ./app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sesamelu/video-beginner-node.git"
+  },
+  "author": "sesamelu",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sesamelu/video-beginner-node/issues"
+  },
+  "homepage": "https://github.com/sesamelu/video-beginner-node#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "nodemon": "^2.0.21"
+  }
+}
