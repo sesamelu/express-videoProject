@@ -32,3 +32,9 @@ module.exports.register = validate([
     .notEmpty().withMessage('密码不能为空').bail()
     .isLength({min:6}).withMessage('密码长度不能小于6位').bail(),
 ])
+module.exports.login = validate([
+    body('phone')
+    .notEmpty().withMessage('手机号不能为空').bail(),
+    body('password')
+    .notEmpty().withMessage('密码不能为空').bail()
+])
