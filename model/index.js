@@ -12,6 +12,6 @@ main().then((res) => {
 })
 
 module.exports = {
-    User:mongoose.model('User',require('./userModel'))
+    User:mongoose.model('Myuser',require('./userModel'))
 
 }
