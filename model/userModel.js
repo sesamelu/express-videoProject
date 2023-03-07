@@ -25,6 +25,14 @@ const userSchema = mongoose.Schema({
         type:String,
         required:false
     },
+    channelDes:{ //频道描述
+        type:String,
+        default:null
+    },
+    subscribeCount:{ //粉丝数
+        type:Number,
+        default:0
+    },
     ...baseModel
 })
 module.exports = userSchema

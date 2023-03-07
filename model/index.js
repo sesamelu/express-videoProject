@@ -12,6 +12,6 @@ main().then((res) => {
 })
 
 module.exports = {
-    User:mongoose.model('Myuser',require('./userModel'))
-
+    User:mongoose.model('Myuser',require('./userModel')),
+    Subscribe:mongoose.model('Mysubscribe',require('./subscribeModel'))
 }
