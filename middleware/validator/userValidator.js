@@ -32,9 +32,34 @@ module.exports.register = validate([
     .notEmpty().withMessage('密码不能为空').bail()
     .isLength({min:6}).withMessage('密码长度不能小于6位').bail(),
 ])
+//用户登录
 module.exports.login = validate([
     body('phone')
     .notEmpty().withMessage('手机号不能为空').bail(),
     body('password')
     .notEmpty().withMessage('密码不能为空').bail()
+])
+//修改用户信息
+module.exports.update = validate([
+    body('username')
+    .custom(async username => {
+        const userInfo = await User.findOne({username})
+        if(userInfo){
+            return Promise.reject('用户名已被注册')
+        }
+    }),
+    body('phone')
+    .custom(async phone => {
+        const phoneInfo = await User.findOne({phone})
+        if(phoneInfo){
+            return Promise.reject('手机号已被注册')
+        }
+    }),
+    body('email')
+    .custom(async email => {
+        const emailInfo = await User.findOne({email})
+        if(emailInfo){
+            return Promise.reject('邮箱已被注册')
+        }
+    }),
 ])

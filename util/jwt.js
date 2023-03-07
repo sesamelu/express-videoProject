@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken')
+const {uuid} = require('../config/config.default')
 const {promisify} = require('util')
 const toSign = promisify(jwt.sign)
 const toVerify = promisify(jwt.verify)
@@ -9,9 +10,9 @@ module.exports.createToken = async (userInfo) => {
 }
 //中间件  校验token是否有效
 module.exports.verifyToken = (required = true) => {//是否需要登录，默认需要
-    return (req,res,next) => {
+    return async (req,res,next) => {
         var token = req.headers.authorization
-        token = token ? token.split('Bearer')[1] : null
+        token = token ? token.split('Bearer ')[1] : null
         if(token){
             try{
                 var userInfo = await toVerify(token,uuid)
