@@ -13,7 +13,11 @@ router.post('/createVideo',verifyToken(),videoValidator.createVideo,videoControl
 router.get('/list',videoController.list)
 //视频详情
 router.get('/video/:videoId',verifyToken(false),videoController.getVideo)
-
-
+// 评论视频
+router.post('/comment/:videoId',verifyToken(),videoController.comment)
+// 获取评论列表
+router.post('/commentlist/:videoId',videoController.commentList)
+// 删除评论
+router.delete('/comment/:videoId/:commentId',verifyToken(),videoController.delComment)
 
 module.exports = router

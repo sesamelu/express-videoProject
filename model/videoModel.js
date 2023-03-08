@@ -18,8 +18,12 @@ const videoSchema = mongoose.Schema({
         type:mongoose.ObjectId,
         required:true,
         ref:'Myuser'
-
     },
+    commentCount:{
+        type:Number,
+        default:0,
+    },
+
     ...baseModel
 })
 module.exports = videoSchema
