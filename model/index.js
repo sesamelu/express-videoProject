@@ -15,5 +15,6 @@ module.exports = {
     User:mongoose.model('Myuser',require('./userModel')),
     Subscribe:mongoose.model('Mysubscribe',require('./subscribeModel')),
     Video:mongoose.model('Myvideo',require('./videoModel')),
-    Comment:mongoose.model('Mycomment',require('./videoCommentModel'))
+    Comment:mongoose.model('Mycomment',require('./videoCommentModel')),
+    Like:mongoose.model('MyLike',require('./videoLikeModel'))
 }

@@ -1,4 +1,4 @@
-const {Video,Comment} = require('../model/index')
+const {Video,Comment,Like} = require('../model/index')
 // 视频入库
 module.exports.createVideo = async (req,res)=>{
     let userId = req.user.userInfo._id
@@ -14,7 +14,7 @@ module.exports.createVideo = async (req,res)=>{
 }
 //获取视频列表
 module.exports.list = async (req,res)=>{
-    let {pageNum,pageSize} = req.body
+    let {pageNum = 1,pageSize = 10} = req.body
     let videoList = await Video.find()
                         .skip((pageNum-1)*pageSize)
                         .limit(pageSize)
@@ -55,7 +55,7 @@ module.exports.comment = async (req,res)=>{
 // 获取评论列表
 module.exports.commentList = async (req,res)=>{
     let videoId = req.params.videoId
-    let {pageNum,pageSize} = req.body
+    let {pageNum = 1,pageSize = 10} = req.body
     try {
         let list = await Comment.find({video:videoId})
                 .skip((pageNum-1) * pageSize)
@@ -93,4 +93,103 @@ module.exports.delComment = async (req,res)=>{
     videoInfo.commentCount -- 
     await videoInfo.save()
     res.status(200).json({msg:'删除成功'})
+}
+// 喜欢视频
+module.exports.like = async (req,res)=>{
+    let videoId = req.params.videoId
+    let userId = req.user.userInfo._id
+    try {
+        var videoInfo = await Video.findById(videoId)  
+    } catch (error) {
+        res.status(400).json({error:'未查找到视频'}) 
+    }
+    //查看是否标记为喜欢，如果喜欢，取消喜欢
+    //如果不喜欢，标记为喜欢
+    var isLike = true
+    const likeVideoInfo = await Like.findOne({
+        user:userId,
+        video:videoId
+    })
+    if(likeVideoInfo && likeVideoInfo.like === 1){
+        await likeVideoInfo.deleteOne()
+        isLike = false
+    }else if(likeVideoInfo && likeVideoInfo.like === -1){
+        likeVideoInfo.like = 1
+        await likeVideoInfo.save()
+    }else{
+        await new Like({
+            user:userId,
+            video:videoId,
+            like:1
+        }).save()
+    }
+    //计算喜欢或者不喜欢的数量，修改视频count
+    videoInfo.likeCount = await Like.countDocuments({
+        video:videoId,
+        like:1
+    })
+    videoInfo.dislikeCount = await Like.countDocuments({
+        video:videoId,
+        like:-1
+    })
+    await videoInfo.save()
+    res.status(200).json({...videoInfo.toJSON(),isLike})
+}
+// 不喜欢视频
+module.exports.dislike = async (req,res)=>{
+    let videoId = req.params.videoId
+    let userId = req.user.userInfo._id
+    try {
+        var videoInfo = await Video.findById(videoId)  
+    } catch (error) {
+        res.status(400).json({error:'未查找到视频'}) 
+    }
+    //查看是否标记为不喜欢，如果不喜欢，取消不喜欢
+    //如果喜欢，标记为不喜欢
+    var isDisLike = true
+    const likeVideoInfo = await Like.findOne({
+        user:userId,
+        video:videoId
+    })
+    if(likeVideoInfo && likeVideoInfo.like === -1){
+        await likeVideoInfo.deleteOne()
+        isDisLike = false
+    }else if(likeVideoInfo && likeVideoInfo.like === 1){
+        likeVideoInfo.like = -1
+        await likeVideoInfo.save()
+    }else{
+        await new Like({
+            user:userId,
+            video:videoId,
+            like:-1
+        }).save()
+    }
+    //计算喜欢或者不喜欢的数量，修改视频count
+    videoInfo.likeCount = await Like.countDocuments({
+        video:videoId,
+        like:1
+    })
+    videoInfo.dislikeCount = await Like.countDocuments({
+        video:videoId,
+        like:-1
+    })
+    await videoInfo.save()
+    res.status(200).json({...videoInfo.toJSON(),isDisLike})
+    
+}
+// 喜欢视频列表
+module.exports.likelist = async (req,res)=>{
+    let userId = req.user.userInfo._id
+    let {pageNum = 1,pageSize = 10} = req.params
+    let list = await Like.find({
+        user:userId,
+        like:1
+    }).skip((pageNum -1)*pageSize)
+    .limit(pageSize)
+    .populate('video','_id title vodvideoId user')
+    let total = await Like.countDocuments({
+        user:userId,
+        like:1
+    })
+    res.status(200).json({list,total})
 }

@@ -23,7 +23,14 @@ const videoSchema = mongoose.Schema({
         type:Number,
         default:0,
     },
-
+    likeCount:{
+        type:Number,
+        default:0,
+    },
+    dislikeCount:{
+        type:Number,
+        default:0,
+    },
     ...baseModel
 })
 module.exports = videoSchema

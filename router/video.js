@@ -19,5 +19,15 @@ router.post('/comment/:videoId',verifyToken(),videoController.comment)
 router.post('/commentlist/:videoId',videoController.commentList)
 // 删除评论
 router.delete('/comment/:videoId/:commentId',verifyToken(),videoController.delComment)
+// 喜欢视频
+router.get('/like/:videoId',verifyToken(),videoController.like)
+// 不喜欢视频
+router.get('/dislike/:videoId',verifyToken(),videoController.dislike)
+// 喜欢视频列表
+router.get('/likelist',verifyToken(),videoController.likelist)
+// 收藏视频
+
+// 获取热门视频
+
 
 module.exports = router
