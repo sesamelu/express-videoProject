@@ -1,4 +1,5 @@
-const {Video,Comment,Like} = require('../model/index')
+const {Video,Comment,Like,Collect,Subscribe} = require('../model/index')
+const {hotInc,hotList} = require('../model/redis/redishots')
 // 视频入库
 module.exports.createVideo = async (req,res)=>{
     let userId = req.user.userInfo._id
@@ -27,9 +28,26 @@ module.exports.list = async (req,res)=>{
 module.exports.getVideo = async (req,res)=>{
     let videoId = req.params.videoId
     //根据用户是否登录返回不同的信息  登录的用户会显示是否喜欢
-    let videoInfo = Video.findById(videoId)
+    let videoInfo = await Video.findById(videoId)
                         .populate('user','_id username avatar')
-    //逻辑待完善
+    videoInfo = videoInfo.toJSON()
+    videoInfo.isLike = false
+    videoInfo.isDislike = false
+    videoInfo.isSubscribe = false
+    if(req.user.userInfo){
+        const userId = req.user.userInfo._id
+        if(await Like.findOne({user:userId,video:videoId,like:1})){
+            videoInfo.isLike = true
+        }
+        if(await Like.findOne({user:userId,video:videoId,like:-1})){
+            videoInfo.isDislike = true
+        }
+        if(await Like.findOne({user:userId,channel:videoInfo.user._id})){
+            videoInfo.isSubscribe = true
+        }
+    }
+    await hotInc(videoId,1)
+    res.status(200).json(videoInfo)
 }
 // 评论视频
 module.exports.comment = async (req,res)=>{
@@ -50,6 +68,7 @@ module.exports.comment = async (req,res)=>{
     }).save()
     videoInfo.commentCount ++ 
     await videoInfo.save()
+    await hotInc(videoId,2)
     res.status(200).json(commentInfo)
 }
 // 获取评论列表
@@ -116,12 +135,14 @@ module.exports.like = async (req,res)=>{
     }else if(likeVideoInfo && likeVideoInfo.like === -1){
         likeVideoInfo.like = 1
         await likeVideoInfo.save()
+        await hotInc(videoId,2)
     }else{
         await new Like({
             user:userId,
             video:videoId,
             like:1
         }).save()
+        await hotInc(videoId,2)
     }
     //计算喜欢或者不喜欢的数量，修改视频count
     videoInfo.likeCount = await Like.countDocuments({
@@ -142,7 +163,7 @@ module.exports.dislike = async (req,res)=>{
     try {
         var videoInfo = await Video.findById(videoId)  
     } catch (error) {
-        res.status(400).json({error:'未查找到视频'}) 
+        return res.status(400).json({error:'未查找到视频'}) 
     }
     //查看是否标记为不喜欢，如果不喜欢，取消不喜欢
     //如果喜欢，标记为不喜欢
@@ -192,4 +213,34 @@ module.exports.likelist = async (req,res)=>{
         like:1
     })
     res.status(200).json({list,total})
+}
+// 收藏视频
+module.exports.collect = async (req,res)=>{
+    let videoId = req.params.videoId
+    let userId = req.user.userInfo._id
+    //视频是否存在
+    try {
+        var videoInfo = await Video.findById(videoId)  
+    } catch (error) {
+        return res.status(400).json({error:'未查找到视频'}) 
+    }
+    let collect = await Collect.findOne({
+        user:userId,
+        video:videoId
+    })
+    if(collect){
+        return res.status(400).json({error:'您已收藏过此视频'}) 
+    }
+    let collectInfo = await new Collect({
+        user:userId,
+        video:videoId
+    }).save()
+    await hotInc(videoId,3)
+    res.status(200).json(collectInfo)
+}
+// 获取热门视频
+module.exports.hotslist = async (req,res)=>{
+    let num = req.params.topnum
+    let list = await hotList(num)
+    res.status(200).json(list)
 }
